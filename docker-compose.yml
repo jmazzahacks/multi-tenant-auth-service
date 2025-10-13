@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: auth-service-db
+    environment:
+      POSTGRES_DB: auth_service
+      POSTGRES_USER: auth-admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth-admin -d auth_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auth-network
+
+  app:
+    build: .
+    container_name: auth-service-app
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-production}
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: auth_service
+      DB_USER: auth-admin
+      DB_PASSWORD: ${DB_PASSWORD}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      AUTH_TOKEN_EXPIRATION: ${AUTH_TOKEN_EXPIRATION:-3600}
+      EMAIL_VERIFICATION_EXPIRATION: ${EMAIL_VERIFICATION_EXPIRATION:-86400}
+      PASSWORD_RESET_EXPIRATION: ${PASSWORD_RESET_EXPIRATION:-3600}
+      EMAIL_CHANGE_EXPIRATION: ${EMAIL_CHANGE_EXPIRATION:-3600}
+      APP_HOST: 0.0.0.0
+      APP_PORT: 5678
+    ports:
+      - "5678:5678"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - auth-network
+
+volumes:
+  postgres_data:
+
+networks:
+  auth-network:
+    driver: bridge
