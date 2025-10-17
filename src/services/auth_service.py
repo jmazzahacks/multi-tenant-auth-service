@@ -3,6 +3,7 @@ import logging
 from typing import Optional
 from database import db_manager
 from models.user import User
+from models.user_role import UserRole
 from models.auth_token import AuthToken
 from services.password_service import password_service
 from services.token_service import token_service
@@ -48,6 +49,7 @@ class AuthService:
             email=email,
             password_hash=password_hash,
             is_verified=False,
+            role=UserRole.USER,
             created_at=current_time,
             updated_at=current_time
         )

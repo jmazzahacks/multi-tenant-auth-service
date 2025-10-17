@@ -1,5 +1,8 @@
 -- Authentication Service Database Schema (Multi-tenant)
 
+-- User role enumeration
+CREATE TYPE user_role AS ENUM ('user', 'admin');
+
 -- Sites table (tenants/websites)
 CREATE TABLE IF NOT EXISTS sites (
     id SERIAL PRIMARY KEY,
@@ -21,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,
+    role user_role DEFAULT 'user',
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL,
     UNIQUE(site_id, email)

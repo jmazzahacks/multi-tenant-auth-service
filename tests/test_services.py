@@ -2,6 +2,7 @@ import time
 from services.password_service import password_service
 from services.token_service import token_service
 from services.auth_service import auth_service
+from models.user_role import UserRole
 
 
 def test_password_hashing():
@@ -77,6 +78,7 @@ def test_register_user(sample_site):
     assert user.site_id == sample_site.id
     assert user.email == "newuser@example.com"
     assert user.is_verified is False
+    assert user.role == UserRole.USER
     assert user.password_hash != "secure_password123"
 
 

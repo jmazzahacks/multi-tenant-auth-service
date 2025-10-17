@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from database import db_manager
 from models.site import Site
 from models.user import User
+from models.user_role import UserRole
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -55,6 +56,7 @@ def sample_user(sample_site):
         email="test@example.com",
         password_hash="$2b$12$hashed_password",
         is_verified=False,
+        role=UserRole.USER,
         created_at=current_time,
         updated_at=current_time
     )

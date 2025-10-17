@@ -7,6 +7,7 @@ load_dotenv()
 class Config:
     """Base configuration"""
     SECRET_KEY: str = os.getenv('SECRET_KEY', 'dev-secret-key')
+    MASTER_API_KEY: str = os.getenv('MASTER_API_KEY', '')
 
     # Database
     DB_HOST: str = os.getenv('DB_HOST', 'localhost')

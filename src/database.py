@@ -155,7 +155,7 @@ class DatabaseManager:
         Create a new user in the database.
 
         Args:
-            user: User model with site_id, email, password_hash, is_verified, created_at, updated_at
+            user: User model with site_id, email, password_hash, is_verified, role, created_at, updated_at
 
         Returns:
             User: The created user with auto-generated id
@@ -163,11 +163,11 @@ class DatabaseManager:
         with self.get_cursor(commit=True) as cursor:
             cursor.execute(
                 """
-                INSERT INTO users (site_id, email, password_hash, is_verified, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO users (site_id, email, password_hash, is_verified, role, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
-                (user.site_id, user.email, user.password_hash, user.is_verified, user.created_at, user.updated_at)
+                (user.site_id, user.email, user.password_hash, user.is_verified, user.role.value, user.created_at, user.updated_at)
             )
             user.id = cursor.fetchone()['id']
         return user
@@ -186,7 +186,7 @@ class DatabaseManager:
 
         with self.get_cursor() as cursor:
             cursor.execute(
-                "SELECT id, site_id, email, password_hash, is_verified, created_at, updated_at FROM users WHERE id = %s",
+                "SELECT id, site_id, email, password_hash, is_verified, role, created_at, updated_at FROM users WHERE id = %s",
                 (user_id,)
             )
             row = cursor.fetchone()
@@ -207,7 +207,7 @@ class DatabaseManager:
 
         with self.get_cursor() as cursor:
             cursor.execute(
-                "SELECT id, site_id, email, password_hash, is_verified, created_at, updated_at FROM users WHERE site_id = %s AND email = %s",
+                "SELECT id, site_id, email, password_hash, is_verified, role, created_at, updated_at FROM users WHERE site_id = %s AND email = %s",
                 (site_id, email)
             )
             row = cursor.fetchone()
@@ -227,10 +227,10 @@ class DatabaseManager:
             cursor.execute(
                 """
                 UPDATE users
-                SET email = %s, password_hash = %s, is_verified = %s, updated_at = %s
+                SET email = %s, password_hash = %s, is_verified = %s, role = %s, updated_at = %s
                 WHERE id = %s
                 """,
-                (user.email, user.password_hash, user.is_verified, user.updated_at, user.id)
+                (user.email, user.password_hash, user.is_verified, user.role.value, user.updated_at, user.id)
             )
         return user
 

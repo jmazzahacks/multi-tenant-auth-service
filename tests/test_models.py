@@ -1,6 +1,7 @@
 import time
 from models.site import Site
 from models.user import User
+from models.user_role import UserRole
 from models.auth_token import AuthToken
 from models.email_verification_token import EmailVerificationToken
 from models.password_reset_token import PasswordResetToken
@@ -68,6 +69,7 @@ def test_user_to_dict():
         email="test@example.com",
         password_hash="hashed_password",
         is_verified=True,
+        role=UserRole.USER,
         created_at=current_time,
         updated_at=current_time
     )
@@ -79,6 +81,7 @@ def test_user_to_dict():
     assert user_dict['email'] == "test@example.com"
     assert user_dict['password_hash'] == "hashed_password"
     assert user_dict['is_verified'] is True
+    assert user_dict['role'] == 'user'
     assert user_dict['created_at'] == current_time
     assert user_dict['updated_at'] == current_time
 
@@ -92,6 +95,7 @@ def test_user_from_dict():
         'email': "test@example.com",
         'password_hash': "hashed_password",
         'is_verified': True,
+        'role': 'user',
         'created_at': current_time,
         'updated_at': current_time
     }
@@ -103,6 +107,7 @@ def test_user_from_dict():
     assert user.email == "test@example.com"
     assert user.password_hash == "hashed_password"
     assert user.is_verified is True
+    assert user.role == UserRole.USER
     assert user.created_at == current_time
     assert user.updated_at == current_time
 

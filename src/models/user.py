@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict, Any
+from models.user_role import UserRole
 
 
 @dataclass
@@ -16,6 +17,7 @@ class User:
         email: User's email address (unique per site)
         password_hash: Bcrypt hashed password
         is_verified: Whether the user's email has been verified
+        role: User role (USER or ADMIN)
         created_at: Unix timestamp when the user was created
         updated_at: Unix timestamp when the user was last updated
     """
@@ -24,6 +26,7 @@ class User:
     email: str
     password_hash: str
     is_verified: bool
+    role: UserRole
     created_at: int
     updated_at: int
 
@@ -35,6 +38,7 @@ class User:
             'email': self.email,
             'password_hash': self.password_hash,
             'is_verified': self.is_verified,
+            'role': self.role.value,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
@@ -48,6 +52,7 @@ class User:
             email=data['email'],
             password_hash=data['password_hash'],
             is_verified=data['is_verified'],
+            role=UserRole(data['role']),
             created_at=data['created_at'],
             updated_at=data['updated_at']
         )

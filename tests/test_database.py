@@ -2,6 +2,7 @@ import time
 from database import db_manager
 from models.site import Site
 from models.user import User
+from models.user_role import UserRole
 from models.auth_token import AuthToken
 
 
@@ -78,6 +79,7 @@ def test_create_user(sample_site):
         email="newuser@example.com",
         password_hash="hashed_password",
         is_verified=False,
+        role=UserRole.USER,
         created_at=current_time,
         updated_at=current_time
     )
@@ -87,6 +89,7 @@ def test_create_user(sample_site):
     assert created_user.id > 0
     assert created_user.site_id == sample_site.id
     assert created_user.email == "newuser@example.com"
+    assert created_user.role == UserRole.USER
 
 
 def test_find_user_by_id(sample_user):

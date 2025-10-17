@@ -57,6 +57,7 @@ class UserResponseSchema(Schema):
     site_id = fields.Integer()
     email = fields.Email()
     is_verified = fields.Boolean()
+    role = fields.String()
     created_at = fields.Integer()
     updated_at = fields.Integer()
 

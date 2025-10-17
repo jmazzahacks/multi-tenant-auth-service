@@ -7,15 +7,19 @@ from database import db_manager
 from models.site import Site
 from schemas.site_schemas import CreateSiteRequestSchema, SiteResponseSchema
 from utils.validators import validate_request
+from utils.api_key_middleware import require_master_api_key
 
 create_site_bp = Blueprint('create_site', __name__)
 
 
 @create_site_bp.route('/api/sites', methods=['POST'])
+@require_master_api_key
 @validate_request(CreateSiteRequestSchema)
 def create_site(validated_data):
     """
     Create a new site.
+
+    Requires master API key (X-API-Key header).
 
     Request body:
         name: Site name
@@ -24,6 +28,7 @@ def create_site(validated_data):
     Returns:
         201: Site created successfully
         400: Validation error or duplicate domain
+        401: Missing or invalid API key
     """
     current_time = int(time.time())
 
