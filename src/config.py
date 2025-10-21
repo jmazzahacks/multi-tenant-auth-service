@@ -6,7 +6,10 @@ load_dotenv()
 
 class Config:
     """Base configuration"""
+    # Flask SECRET_KEY - Not currently used (stateless token-based auth, no sessions/cookies)
+    # Reserved for future use if sessions, CSRF, or signed cookies are needed
     SECRET_KEY: str = os.getenv('SECRET_KEY', 'dev-secret-key')
+    # Master API key for administrative operations (site creation/management)
     MASTER_API_KEY: str = os.getenv('MASTER_API_KEY', '')
 
     # Database
