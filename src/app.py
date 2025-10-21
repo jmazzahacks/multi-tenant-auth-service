@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_cors import CORS
 from config import get_config
@@ -11,8 +12,14 @@ def create_app() -> Flask:
     config = get_config()
     app.config.from_object(config)
 
-    # Enable CORS
-    CORS(app, origins=[config.FRONTEND_URL])
+    # Enable CORS - Allow all origins for multi-tenant architecture
+    # In production, configure allowed origins via CORS_ORIGINS environment variable
+    cors_origins = os.getenv('CORS_ORIGINS', '*')
+    if cors_origins == '*':
+        CORS(app)
+    else:
+        # Comma-separated list of allowed origins
+        CORS(app, origins=cors_origins.split(','))
 
     # Register blueprints
     from api.register import register_bp
