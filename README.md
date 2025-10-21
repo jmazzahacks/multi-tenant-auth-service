@@ -34,10 +34,80 @@ See `.env.example` for all required variables.
 ## Quick Start
 
 1. Clone the repository
-2. Copy `.env.example` to `.env` and configure your environment variables
+2. Copy `env.example` to `.env` and configure your environment variables
 3. Set up the database: `python setup-database.py`
 4. Install dependencies: `pip install -r requirements.txt`
 5. Run the application: `python src/app.py`
+
+## API Documentation
+
+### Site Management
+
+Site management endpoints require the master API key (`X-API-Key` header).
+
+#### Create Site
+
+Create a new tenant site. Use the included interactive script for convenience.
+
+```bash
+# Using the interactive script
+python admin_scripts/create-site.py
+
+# Or using curl directly
+curl -X POST http://localhost:5678/api/sites \
+  -H "X-API-Key: your-master-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Website",
+    "domain": "example.com",
+    "frontend_url": "https://example.com",
+    "email_from": "noreply@example.com",
+    "email_from_name": "My Website"
+  }'
+```
+
+#### List All Sites
+
+```bash
+curl http://localhost:5678/api/sites \
+  -H "X-API-Key: your-master-api-key"
+```
+
+#### Get Site by ID
+
+```bash
+curl http://localhost:5678/api/sites/{site_id} \
+  -H "X-API-Key: your-master-api-key"
+```
+
+#### Get Site by Domain (Public)
+
+This endpoint is public to allow frontend applications to bootstrap by looking up their site configuration.
+
+```bash
+curl "http://localhost:5678/api/sites/by-domain?domain=example.com"
+```
+
+#### Update Site
+
+All fields are optional. Only provided fields will be updated.
+
+```bash
+curl -X PUT http://localhost:5678/api/sites/{site_id} \
+  -H "X-API-Key: your-master-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Name",
+    "email_from": "support@example.com",
+    "email_from_name": "Support Team"
+  }'
+```
+
+### User Management
+
+User management endpoints are scoped to sites and use bearer token authentication.
+
+Documentation coming soon.
 
 ## Development Status
 
