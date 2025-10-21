@@ -33,6 +33,8 @@ def create_app() -> Flask:
     from api.confirm_email_change import confirm_email_change_bp
     from api.create_site import create_site_bp
     from api.get_site import get_site_bp
+    from api.list_sites import list_sites_bp
+    from api.update_site import update_site_bp
 
     app.register_blueprint(register_bp)
     app.register_blueprint(login_bp)
@@ -45,6 +47,8 @@ def create_app() -> Flask:
     app.register_blueprint(confirm_email_change_bp)
     app.register_blueprint(create_site_bp)
     app.register_blueprint(get_site_bp)
+    app.register_blueprint(list_sites_bp)
+    app.register_blueprint(update_site_bp)
 
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])

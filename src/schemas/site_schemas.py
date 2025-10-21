@@ -13,6 +13,15 @@ class CreateSiteRequestSchema(Schema):
     email_from_name = fields.String(required=True, validate=validate.Length(min=1, max=255))
 
 
+class UpdateSiteRequestSchema(Schema):
+    """Schema for updating a site (all fields optional)"""
+    name = fields.String(required=False, validate=validate.Length(min=1, max=255))
+    domain = fields.String(required=False, validate=validate.Length(min=1, max=255))
+    frontend_url = fields.Url(required=False)
+    email_from = fields.Email(required=False)
+    email_from_name = fields.String(required=False, validate=validate.Length(min=1, max=255))
+
+
 class SiteResponseSchema(Schema):
     """Schema for site response"""
     id = fields.Integer()
