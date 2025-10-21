@@ -6,3 +6,4 @@ python-dotenv
 email-validator
 sendgrid
 marshmallow
+requests
