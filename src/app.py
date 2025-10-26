@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import Flask
 from flask_cors import CORS
 from config import get_config
@@ -7,6 +8,12 @@ from config import get_config
 def create_app() -> Flask:
     """Application factory pattern"""
     app = Flask(__name__)
+
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
 
     # Load configuration
     config = get_config()

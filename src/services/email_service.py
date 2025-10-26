@@ -45,6 +45,9 @@ class EmailService:
             logger.error("SendGrid API key not configured")
             return False
 
+        logger.info(f"Attempting to send email to {to_email} from {from_email}")
+        logger.debug(f"Subject: {subject}")
+
         try:
             message = Mail(
                 from_email=Email(from_email, from_name),
@@ -60,14 +63,14 @@ class EmailService:
             response = sg.send(message)
 
             if response.status_code >= 200 and response.status_code < 300:
-                logger.info(f"Email sent successfully to {to_email}")
+                logger.info(f"✓ Email sent successfully to {to_email} (Status: {response.status_code})")
                 return True
             else:
-                logger.error(f"Failed to send email. Status: {response.status_code}")
+                logger.error(f"✗ Failed to send email. Status: {response.status_code}, Body: {response.body}")
                 return False
 
         except Exception as e:
-            logger.error(f"Error sending email: {str(e)}")
+            logger.error(f"✗ Error sending email to {to_email}: {str(e)}", exc_info=True)
             return False
 
     def send_verification_email(
