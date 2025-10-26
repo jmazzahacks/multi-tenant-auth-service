@@ -57,9 +57,13 @@ class UserResponseSchema(Schema):
     site_id = fields.Integer()
     email = fields.Email()
     is_verified = fields.Boolean()
-    role = fields.String()
+    role = fields.Method("get_role")
     created_at = fields.Integer()
     updated_at = fields.Integer()
+
+    def get_role(self, obj):
+        """Extract role value from UserRole enum"""
+        return obj.role.value if hasattr(obj.role, 'value') else obj.role
 
 
 class AuthTokenResponseSchema(Schema):

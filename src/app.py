@@ -23,6 +23,7 @@ def create_app() -> Flask:
 
     # Register blueprints
     from api.register import register_bp
+    from api.admin_register import admin_register_bp
     from api.login import login_bp
     from api.logout import logout_bp
     from api.verify_email import verify_email_bp
@@ -37,6 +38,7 @@ def create_app() -> Flask:
     from api.update_site import update_site_bp
 
     app.register_blueprint(register_bp)
+    app.register_blueprint(admin_register_bp)
     app.register_blueprint(login_bp)
     app.register_blueprint(logout_bp)
     app.register_blueprint(verify_email_bp)

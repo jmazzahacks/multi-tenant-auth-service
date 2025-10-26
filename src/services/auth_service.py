@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class AuthService:
     """Service for user authentication and account management"""
 
-    def register_user(self, site_id: int, email: str, password: str) -> User:
+    def register_user(self, site_id: int, email: str, password: str, role: UserRole = UserRole.USER) -> User:
         """
         Register a new user account for a specific site.
 
@@ -26,6 +26,7 @@ class AuthService:
             site_id: The ID of the site to register the user for
             email: The user's email address
             password: The user's plain text password
+            role: The user's role (defaults to USER)
 
         Returns:
             User: The created user model
@@ -49,7 +50,7 @@ class AuthService:
             email=email,
             password_hash=password_hash,
             is_verified=False,
-            role=UserRole.USER,
+            role=role,
             created_at=current_time,
             updated_at=current_time
         )
