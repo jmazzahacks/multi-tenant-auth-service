@@ -118,7 +118,9 @@ class EmailService:
         Returns:
             bool: True if sent successfully
         """
-        verification_url = f"{frontend_url}/verify-email?token={token}"
+        # Strip trailing slash from frontend_url to avoid double slashes
+        base_url = frontend_url.rstrip('/')
+        verification_url = f"{base_url}/verify-email?token={token}"
 
         subject = f"Verify your email for {site_name}"
 
@@ -172,7 +174,9 @@ class EmailService:
         Returns:
             bool: True if sent successfully
         """
-        reset_url = f"{frontend_url}/reset-password?token={token}"
+        # Strip trailing slash from frontend_url to avoid double slashes
+        base_url = frontend_url.rstrip('/')
+        reset_url = f"{base_url}/reset-password?token={token}"
 
         subject = f"Reset your password for {site_name}"
 
@@ -229,7 +233,9 @@ class EmailService:
         Returns:
             bool: True if sent successfully
         """
-        confirmation_url = f"{frontend_url}/confirm-email-change?token={token}"
+        # Strip trailing slash from frontend_url to avoid double slashes
+        base_url = frontend_url.rstrip('/')
+        confirmation_url = f"{base_url}/confirm-email-change?token={token}"
 
         subject = f"Confirm your email change for {site_name}"
 
