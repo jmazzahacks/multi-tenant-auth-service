@@ -1,8 +1,7 @@
 """
-Email service for sending transactional emails using SendGrid.
+Email service for sending transactional emails using Mailgun.
 """
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content
+import requests
 from config import get_config
 from typing import Optional
 import logging
@@ -11,12 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class EmailService:
-    """Service for sending emails via SendGrid"""
+    """Service for sending emails via Mailgun"""
 
     def __init__(self):
-        """Initialize the email service with SendGrid API key from config"""
+        """Initialize the email service with Mailgun API key and domain from config"""
         config = get_config()
-        self.api_key = config.SENDGRID_API_KEY
+        self.api_key = config.MAILGUN_API_KEY
+        self.domain = config.MAILGUN_DOMAIN
+        self.api_url = f"https://api.mailgun.net/v3/{self.domain}/messages"
 
     def send_email(
         self,
@@ -28,7 +29,7 @@ class EmailService:
         text_content: Optional[str] = None
     ) -> bool:
         """
-        Send an email using SendGrid.
+        Send an email using Mailgun.
 
         Args:
             to_email: Recipient email address
@@ -42,33 +43,54 @@ class EmailService:
             bool: True if email sent successfully, False otherwise
         """
         if not self.api_key:
-            logger.error("SendGrid API key not configured")
+            logger.error("Mailgun API key not configured")
+            return False
+
+        if not self.domain:
+            logger.error("Mailgun domain not configured")
             return False
 
         logger.info(f"Attempting to send email to {to_email} from {from_email}")
         logger.debug(f"Subject: {subject}")
 
         try:
-            message = Mail(
-                from_email=Email(from_email, from_name),
-                to_emails=To(to_email),
-                subject=subject,
-                html_content=Content("text/html", html_content)
+            # Format the from address with name
+            from_address = f"{from_name} <{from_email}>"
+
+            # Prepare the email data
+            data = {
+                "from": from_address,
+                "to": to_email,
+                "subject": subject,
+                "html": html_content
+            }
+
+            # Add text content if provided
+            if text_content:
+                data["text"] = text_content
+
+            # Send the request to Mailgun
+            response = requests.post(
+                self.api_url,
+                auth=("api", self.api_key),
+                data=data,
+                timeout=10
             )
 
-            if text_content:
-                message.plain_text_content = Content("text/plain", text_content)
-
-            sg = SendGridAPIClient(self.api_key)
-            response = sg.send(message)
-
-            if response.status_code >= 200 and response.status_code < 300:
+            if response.status_code == 200:
                 logger.info(f"✓ Email sent successfully to {to_email} (Status: {response.status_code})")
+                logger.debug(f"Mailgun response: {response.json()}")
                 return True
             else:
-                logger.error(f"✗ Failed to send email. Status: {response.status_code}, Body: {response.body}")
+                logger.error(f"✗ Failed to send email. Status: {response.status_code}, Body: {response.text}")
                 return False
 
+        except requests.exceptions.Timeout:
+            logger.error(f"✗ Timeout sending email to {to_email}", exc_info=True)
+            return False
+        except requests.exceptions.RequestException as e:
+            logger.error(f"✗ Request error sending email to {to_email}: {str(e)}", exc_info=True)
+            return False
         except Exception as e:
             logger.error(f"✗ Error sending email to {to_email}: {str(e)}", exc_info=True)
             return False

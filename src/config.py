@@ -19,8 +19,9 @@ class Config:
     DB_USER: str = os.getenv('DB_USER', 'auth-admin')
     DB_PASSWORD: str = os.getenv('DB_PASSWORD', 'auth-admin')
 
-    # SendGrid
-    SENDGRID_API_KEY: str = os.getenv('SENDGRID_API_KEY', '')
+    # Mailgun
+    MAILGUN_API_KEY: str = os.getenv('MAILGUN_API_KEY', '')
+    MAILGUN_DOMAIN: str = os.getenv('MAILGUN_DOMAIN', '')
     EMAIL_FROM: str = os.getenv('EMAIL_FROM', 'noreply@example.com')
     EMAIL_FROM_NAME: str = os.getenv('EMAIL_FROM_NAME', 'Auth Service')
 
