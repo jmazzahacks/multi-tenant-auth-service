@@ -15,15 +15,15 @@ class Config:
     # Database
     DB_HOST: str = os.getenv('DB_HOST', 'localhost')
     DB_PORT: int = int(os.getenv('DB_PORT', 5432))
-    DB_NAME: str = os.getenv('DB_NAME', 'auth_service')
-    DB_USER: str = os.getenv('DB_USER', 'auth-admin')
-    DB_PASSWORD: str = os.getenv('DB_PASSWORD', 'auth-admin')
+    DB_NAME: str = os.getenv('DB_NAME', 'aegis')
+    DB_USER: str = os.getenv('DB_USER', 'aegis_admin')
+    DB_PASSWORD: str = os.getenv('DB_PASSWORD', 'aegis_admin')
 
     # Mailgun
     MAILGUN_API_KEY: str = os.getenv('MAILGUN_API_KEY', '')
     MAILGUN_DOMAIN: str = os.getenv('MAILGUN_DOMAIN', '')
     EMAIL_FROM: str = os.getenv('EMAIL_FROM', 'noreply@example.com')
-    EMAIL_FROM_NAME: str = os.getenv('EMAIL_FROM_NAME', 'Auth Service')
+    EMAIL_FROM_NAME: str = os.getenv('EMAIL_FROM_NAME', 'ByteForge Aegis')
 
     # Token Expiration (seconds)
     AUTH_TOKEN_EXPIRATION: int = int(os.getenv('AUTH_TOKEN_EXPIRATION', 3600))

@@ -1,4 +1,4 @@
--- Authentication Service Database Schema (Multi-tenant)
+-- ByteForge Aegis Database Schema (Multi-tenant Authentication Service)
 
 -- User role enumeration
 CREATE TYPE user_role AS ENUM ('user', 'admin');
