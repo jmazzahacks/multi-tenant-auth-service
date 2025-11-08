@@ -1,6 +1,6 @@
-# Multi-Tenant Auth Service
+# ByteForge Aegis
 
-Multi-tenant authentication API built with Flask and PostgreSQL. Supports user registration, login, email verification, password management, and role-based authorization for multiple sites.
+Multi-tenant authentication service built with Flask and PostgreSQL. Provides secure user authentication, email verification, password management, and role-based authorization for multiple sites with isolated user bases.
 
 ## Features
 
@@ -10,14 +10,15 @@ Multi-tenant authentication API built with Flask and PostgreSQL. Supports user r
 - **Email Management** - Change email with verification
 - **Role-Based Authorization** - User and admin roles per site
 - **API Key Authentication** - Master API key for administrative operations
-- **Email Integration** - SendGrid support for transactional emails
+- **Email Integration** - Mailgun integration for transactional emails
 - **Token-Based Sessions** - Secure authentication tokens with expiration
+- **PostgreSQL Backend** - Reliable data storage with proper indexing
 
 ## Requirements
 
 - Python 3.13+
 - PostgreSQL 12+
-- SendGrid account (for email functionality)
+- Mailgun account (for email functionality)
 
 ## Security Notice
 
@@ -27,17 +28,53 @@ All configuration must be set via environment variables in production environmen
 - Generate a strong random `SECRET_KEY`
 - Set a strong `MASTER_API_KEY`
 - Use a secure `DB_PASSWORD`
-- Configure your `SENDGRID_API_KEY`
+- Configure your `MAILGUN_API_KEY` and `MAILGUN_DOMAIN`
 
 See `.env.example` for all required variables.
 
 ## Quick Start
 
-1. Clone the repository
-2. Copy `env.example` to `.env` and configure your environment variables
-3. Set up the database: `python setup-database.py`
-4. Install dependencies: `pip install -r requirements.txt`
-5. Run the application: `python src/app.py`
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/jmazzahacks/byteforge-aegis.git
+   cd byteforge-aegis
+   ```
+
+2. **Set up Python virtual environment** (already included)
+   ```bash
+   # Virtual environment is included in the repository
+   # Activate it for all commands
+   source bin/activate
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env and configure your settings
+   ```
+
+4. **Set up PostgreSQL database**
+   ```bash
+   # Create database and user in PostgreSQL
+   psql -U postgres -c "CREATE DATABASE aegis;"
+   psql -U postgres -c "CREATE USER aegis_admin WITH PASSWORD 'your-secure-password';"
+   psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE aegis TO aegis_admin;"
+
+   # Load schema
+   psql -U aegis_admin -d aegis -f database/schema.sql
+   ```
+
+5. **Install dependencies**
+   ```bash
+   source bin/activate && pip install -r requirements.txt
+   ```
+
+6. **Run the application**
+   ```bash
+   source bin/activate && python src/app.py
+   ```
+
+The API will be available at `http://localhost:5678`
 
 ## API Documentation
 
@@ -109,16 +146,47 @@ User management endpoints are scoped to sites and use bearer token authenticatio
 
 Documentation coming soon.
 
-## Development Status
+## Admin Scripts
 
-This project is in early development. APIs and implementation details may change.
+Convenient interactive scripts for common administrative tasks:
+
+- **create-site.py** - Create a new tenant site
+- **create-user.py** - Create users (regular or admin) for existing sites
+- **test-email-service.py** - Test Mailgun email integration
+
+All scripts use the master API key for authentication. Run from the repository root:
+
+```bash
+source bin/activate && python admin_scripts/<script-name>.py
+```
 
 ## Testing
 
+Run the test suite:
+
 ```bash
-pytest
+source bin/activate && pytest
 ```
+
+Run a specific test:
+
+```bash
+source bin/activate && pytest tests/test_specific_file.py::test_function_name
+```
+
+## Related Projects
+
+- **byteforge-aegis-client-js** - JavaScript/TypeScript API client
+- **byteforge-aegis-frontend** - Next.js frontend application (coming soon)
+
+## Development Status
+
+This project is under active development. APIs and implementation details may change.
 
 ## License
 
 MIT
+
+## Author
+
+Jason Byteforge (@jmazzahacks)
