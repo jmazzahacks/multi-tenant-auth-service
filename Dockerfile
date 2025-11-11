@@ -1,6 +1,5 @@
 FROM python:3.13-slim
 
-# Set working directory
 WORKDIR /app
 
 # Install system dependencies
@@ -9,22 +8,30 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application source code
+# Copy application code
 COPY src/ ./src/
 COPY database/ ./database/
-COPY setup-database.py .
+COPY admin_scripts/ ./admin_scripts/
 
-# Expose port
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Expose the application port
 EXPOSE 5678
 
-# Set Python path
+# Set environment variables
 ENV PYTHONPATH=/app/src
+ENV PORT=5678
 
-# Run the application
-CMD ["python", "src/app.py"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5678/api/health')" || exit 1
+
+# Run with gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:5678", "--workers", "4", "--chdir", "src", "app:app"]
