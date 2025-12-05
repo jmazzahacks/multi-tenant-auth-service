@@ -16,6 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 COPY database/ ./database/
 COPY admin_scripts/ ./admin_scripts/
+COPY setup-database.py .
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
@@ -33,5 +34,5 @@ ENV PORT=5678
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5678/api/health')" || exit 1
 
-# Run with gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5678", "--workers", "4", "--chdir", "src", "app:app"]
+# Run with gunicorn for production (using application factory pattern)
+CMD ["gunicorn", "--bind", "0.0.0.0:5678", "--workers", "4", "--chdir", "src", "app:create_app()"]

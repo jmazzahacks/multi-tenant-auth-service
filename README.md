@@ -174,6 +174,251 @@ Run a specific test:
 source bin/activate && pytest tests/test_specific_file.py::test_function_name
 ```
 
+## Docker Deployment
+
+ByteForge Aegis includes production-ready Docker configuration with Gunicorn, automated versioning, and container registry publishing.
+
+### Prerequisites
+
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+- For publishing: authenticated to your container registry (GitHub Container Registry, Docker Hub, etc.)
+
+### Quick Start with Docker Compose
+
+1. **Create environment file**
+   ```bash
+   cp .env.docker.example .env
+   # Edit .env with your configuration
+   ```
+
+2. **Generate security keys**
+   ```bash
+   # Generate SECRET_KEY
+   openssl rand -hex 32
+
+   # Generate MASTER_API_KEY
+   openssl rand -hex 32
+   ```
+
+3. **Start services**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Check health**
+   ```bash
+   curl http://localhost:5678/api/health
+   ```
+
+5. **View logs**
+   ```bash
+   docker-compose logs -f app
+   ```
+
+### Docker Compose Services
+
+The `docker-compose.yml` defines two services:
+
+- **db** - PostgreSQL 16 database (port 5432)
+  - Container: `byteforge-aegis-db`
+  - Database: `aegis`
+  - User: `aegis_admin`
+  - Includes health checks
+  - Auto-loads schema on first run
+
+- **app** - Flask application with Gunicorn (port 5678)
+  - Container: `byteforge-aegis-app`
+  - 4 Gunicorn workers for production
+  - Non-root user for security
+  - Health checks and auto-restart
+  - Waits for database to be healthy
+
+### Building and Publishing Images
+
+The `build-publish.sh` script provides automated versioning and publishing to container registries.
+
+**Standard build** (increments version, uses cache):
+```bash
+./build-publish.sh
+```
+
+**Fresh build** (no cache, latest dependencies):
+```bash
+./build-publish.sh --no-cache
+```
+
+**How versioning works:**
+- First build creates `VERSION` file with version 1
+- Each build increments version automatically
+- Tags created: `{registry}:N` and `{registry}:latest`
+- VERSION file is gitignored (build system manages it)
+
+**Container Registry Setup:**
+
+For GitHub Container Registry (ghcr.io):
+```bash
+# Set your GitHub Personal Access Token
+export CR_PAT=ghp_your_token_here
+
+# Login to GHCR
+echo $CR_PAT | docker login ghcr.io -u your-username --password-stdin
+
+# Build and publish
+./build-publish.sh
+```
+
+For Docker Hub:
+```bash
+# Login
+docker login docker.io
+
+# Update registry URL in build-publish.sh
+# Then build and publish
+./build-publish.sh
+```
+
+### Production Deployment
+
+**Using published images:**
+
+```bash
+docker pull ghcr.io/jmazzahacks/byteforge-aegis:latest
+
+docker run -p 5678:5678 \
+  -e SECRET_KEY=your-secret-key \
+  -e MASTER_API_KEY=your-master-key \
+  -e DB_HOST=your-db-host \
+  -e DB_PASSWORD=your-db-password \
+  -e MAILGUN_API_KEY=your-mailgun-key \
+  -e MAILGUN_DOMAIN=your-domain.mailgun.org \
+  ghcr.io/jmazzahacks/byteforge-aegis:latest
+```
+
+**With external PostgreSQL:**
+
+Update your .env file or environment variables:
+```bash
+DB_HOST=your-postgres-host.example.com
+DB_PORT=5432
+DB_NAME=aegis
+DB_USER=aegis_admin
+DB_PASSWORD=your-secure-password
+```
+
+Then start only the app service:
+```bash
+docker-compose up app
+```
+
+### Docker Configuration Details
+
+**Dockerfile features:**
+- Python 3.11 slim base image
+- Gunicorn with 4 workers (configurable)
+- Non-root user (appuser) for security
+- Health check endpoint monitoring
+- PostgreSQL client tools included
+- Admin scripts included for management
+
+**Security:**
+- Runs as non-root user
+- Minimal base image
+- No build secrets in final image
+- Environment-based configuration
+
+**Performance:**
+- Layer caching for faster builds
+- Gunicorn for concurrent requests
+- Health checks for reliability
+- Restart policies for availability
+
+### Environment Variables (Docker)
+
+Required variables for Docker deployment:
+
+```bash
+# Security (required)
+SECRET_KEY=generate-with-openssl-rand-hex-32
+MASTER_API_KEY=generate-with-openssl-rand-hex-32
+DB_PASSWORD=your-database-password
+
+# Mailgun (required for email)
+MAILGUN_API_KEY=your-mailgun-api-key
+MAILGUN_DOMAIN=your-domain.mailgun.org
+EMAIL_FROM=noreply@yourdomain.com
+
+# Optional (have defaults)
+FLASK_ENV=production
+FLASK_DEBUG=False
+EMAIL_FROM_NAME=ByteForge Aegis
+CORS_ORIGINS=*
+AUTH_TOKEN_EXPIRATION=3600
+EMAIL_VERIFICATION_EXPIRATION=86400
+```
+
+See `.env.docker.example` for complete configuration template.
+
+### Troubleshooting Docker
+
+**Container won't start:**
+```bash
+# Check logs
+docker-compose logs app
+
+# Check database connectivity
+docker-compose exec app pg_isready -h db -U aegis_admin -d aegis
+```
+
+**Database connection issues:**
+```bash
+# Ensure database is healthy
+docker-compose ps
+
+# Check database logs
+docker-compose logs db
+
+# Restart services
+docker-compose restart
+```
+
+**Reset database:**
+```bash
+# WARNING: This deletes all data!
+docker-compose down -v
+docker-compose up -d
+```
+
+**Build fails:**
+```bash
+# Clean rebuild
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### Docker Logs
+
+Logs are configured with rotation:
+- Max size: 10MB per file
+- Max files: 3 files
+- Format: JSON
+
+View logs:
+```bash
+# All services
+docker-compose logs -f
+
+# App only
+docker-compose logs -f app
+
+# Database only
+docker-compose logs -f db
+
+# Last 100 lines
+docker-compose logs --tail=100 app
+```
+
 ## Related Projects
 
 - **byteforge-aegis-client-js** - JavaScript/TypeScript API client

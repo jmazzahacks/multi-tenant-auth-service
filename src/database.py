@@ -2,7 +2,8 @@ import psycopg2
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
-from typing import Generator, Optional
+from typing import Generator, List, Optional
+from models.user import User
 from config import get_config
 
 
@@ -12,21 +13,36 @@ class DatabaseManager:
     def __init__(self, min_conn: int = 1, max_conn: int = 10):
         self.config = get_config()
         self.connection_pool = None
+        self.min_conn = min_conn
+        self.max_conn = max_conn
+        self._pool_initialized = False
+
+        # Try to initialize, but don't fail if database isn't available yet
+        self._try_initialize_pool()
+
+    def _try_initialize_pool(self) -> bool:
+        """Try to initialize the connection pool. Returns True if successful."""
+        if self._pool_initialized:
+            return True
 
         try:
             self.connection_pool = psycopg2.pool.SimpleConnectionPool(
-                min_conn,
-                max_conn,
+                self.min_conn,
+                self.max_conn,
                 host=self.config.DB_HOST,
                 port=self.config.DB_PORT,
                 database=self.config.DB_NAME,
                 user=self.config.DB_USER,
                 password=self.config.DB_PASSWORD
             )
+            self._pool_initialized = True
             print("Database connection pool initialized successfully")
+            return True
         except Exception as e:
-            print(f"Error initializing database pool: {e}")
-            raise
+            print(f"Warning: Database not available yet: {e}")
+            self.connection_pool = None
+            self._pool_initialized = False
+            return False
 
     def close_pool(self) -> None:
         """Close all connections in the pool"""
@@ -41,6 +57,11 @@ class DatabaseManager:
     @contextmanager
     def get_connection(self) -> Generator:
         """Context manager for getting a database connection from the pool"""
+        # Lazy initialization: try to connect if not already connected
+        if not self._pool_initialized:
+            if not self._try_initialize_pool():
+                raise Exception("Database connection not available. Please check DB_HOST, DB_PORT, DB_NAME, DB_USER, and DB_PASSWORD.")
+
         if not self.connection_pool:
             raise Exception("Connection pool not initialized")
 
@@ -212,6 +233,24 @@ class DatabaseManager:
             )
             row = cursor.fetchone()
             return User.from_dict(row) if row else None
+
+    def list_users_by_site(self, site_id: int) -> List[User]:
+        """
+        List all users for a specific site.
+
+        Args:
+            site_id: The ID of the site
+
+        Returns:
+            List of User models
+        """
+        with self.get_cursor() as cursor:
+            cursor.execute(
+                "SELECT id, site_id, email, password_hash, is_verified, role, created_at, updated_at FROM users WHERE site_id = %s ORDER BY id",
+                (site_id,)
+            )
+            rows = cursor.fetchall()
+            return [User.from_dict(row) for row in rows]
 
     def update_user(self, user: 'User') -> 'User':
         """
