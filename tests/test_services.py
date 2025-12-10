@@ -192,10 +192,11 @@ def test_verify_email(sample_site):
         verification_token = result['token']
 
     # Verify email
-    verified_user = auth_service.verify_email(verification_token)
+    result = auth_service.verify_email(verification_token)
 
-    assert verified_user.is_verified is True
-    assert verified_user.id == user.id
+    assert result.user.is_verified is True
+    assert result.user.id == user.id
+    assert result.redirect_url == sample_site.frontend_url
 
 
 def test_change_password(sample_site):
