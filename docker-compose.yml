@@ -29,7 +29,7 @@ services:
 
   app:
     build: .
-    container_name: byteforge-aegis-app
+    container_name: aegis
     restart: unless-stopped
     environment:
       FLASK_ENV: ${FLASK_ENV:-production}
