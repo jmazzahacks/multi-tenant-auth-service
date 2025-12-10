@@ -217,3 +217,39 @@ def test_delete_auth_tokens_by_user(sample_site, sample_user):
     for i in range(3):
         found_token = db_manager.find_auth_token_by_token(f"token_{i}")
         assert found_token is None
+
+
+def test_delete_user(sample_site, sample_user):
+    """Test deleting a user and all related data."""
+    # First verify user exists
+    found_user = db_manager.find_user_by_id(sample_user.id)
+    assert found_user is not None
+
+    # Create some auth tokens for the user
+    current_time = int(time.time())
+    token = AuthToken(
+        token="test_token_for_deletion",
+        site_id=sample_site.id,
+        user_id=sample_user.id,
+        expires_at=current_time + 3600,
+        created_at=current_time
+    )
+    db_manager.create_auth_token(token)
+
+    # Delete the user
+    deleted = db_manager.delete_user(sample_user.id)
+    assert deleted is True
+
+    # Verify user is gone
+    found_user = db_manager.find_user_by_id(sample_user.id)
+    assert found_user is None
+
+    # Verify auth tokens are also gone
+    found_token = db_manager.find_auth_token_by_token("test_token_for_deletion")
+    assert found_token is None
+
+
+def test_delete_user_not_found(clean_database):
+    """Test deleting a non-existent user returns False."""
+    deleted = db_manager.delete_user(99999)
+    assert deleted is False

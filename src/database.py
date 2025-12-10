@@ -273,6 +273,27 @@ class DatabaseManager:
             )
         return user
 
+    def delete_user(self, user_id: int) -> bool:
+        """
+        Delete a user and all related data from the database.
+
+        Args:
+            user_id: The ID of the user to delete
+
+        Returns:
+            bool: True if user was deleted, False if user not found
+        """
+        with self.get_cursor(commit=True) as cursor:
+            # Delete related tokens first (foreign key constraints)
+            cursor.execute("DELETE FROM auth_tokens WHERE user_id = %s", (user_id,))
+            cursor.execute("DELETE FROM email_verification_tokens WHERE user_id = %s", (user_id,))
+            cursor.execute("DELETE FROM password_reset_tokens WHERE user_id = %s", (user_id,))
+            cursor.execute("DELETE FROM email_change_requests WHERE user_id = %s", (user_id,))
+
+            # Delete the user
+            cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+            return cursor.rowcount > 0
+
     # AuthToken operations
     def create_auth_token(self, auth_token: 'AuthToken') -> 'AuthToken':
         """
