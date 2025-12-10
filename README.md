@@ -6,6 +6,7 @@ Multi-tenant authentication service built with Flask and PostgreSQL. Provides se
 
 - **Multi-tenant Architecture** - Isolate users and authentication by site/domain
 - **User Management** - Registration, login, email verification
+- **Centralized Email Verification** - Single verification page handles all tenants with configurable redirect
 - **Password Management** - Password changes, reset via email
 - **Email Management** - Change email with verification
 - **Role-Based Authorization** - User and admin roles per site
@@ -88,7 +89,7 @@ Create a new tenant site. Use the included interactive script for convenience.
 
 ```bash
 # Using the interactive script
-python admin_scripts/create-site.py
+source bin/activate && python admin_scripts/create-site.py
 
 # Or using curl directly
 curl -X POST http://localhost:5678/api/sites \
@@ -98,10 +99,13 @@ curl -X POST http://localhost:5678/api/sites \
     "name": "My Website",
     "domain": "example.com",
     "frontend_url": "https://example.com",
+    "verification_redirect_url": "https://example.com/welcome",
     "email_from": "noreply@example.com",
     "email_from_name": "My Website"
   }'
 ```
+
+Note: `verification_redirect_url` is optional. If not set, users will be redirected to `frontend_url` after email verification.
 
 #### List All Sites
 
@@ -130,11 +134,16 @@ curl "http://localhost:5678/api/sites/by-domain?domain=example.com"
 All fields are optional. Only provided fields will be updated.
 
 ```bash
+# Using the interactive script
+source bin/activate && python admin_scripts/update-site.py
+
+# Or using curl directly
 curl -X PUT http://localhost:5678/api/sites/{site_id} \
   -H "X-API-Key: your-master-api-key" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Updated Name",
+    "verification_redirect_url": "https://example.com/welcome",
     "email_from": "support@example.com",
     "email_from_name": "Support Team"
   }'
@@ -151,8 +160,11 @@ Documentation coming soon.
 Convenient interactive scripts for common administrative tasks:
 
 - **create-site.py** - Create a new tenant site
+- **update-site.py** - Update an existing site's configuration
+- **list-sites.py** - List all sites
 - **create-user.py** - Create users (regular or admin) for existing sites
-- **test-email-service.py** - Test Mailgun email integration
+- **list-users.py** - List users for a site (by site ID or domain)
+- **resend-verification.py** - Resend verification email for unverified users
 
 All scripts use the master API key for authentication. Run from the repository root:
 
@@ -348,6 +360,9 @@ MAILGUN_API_KEY=your-mailgun-api-key
 MAILGUN_DOMAIN=your-domain.mailgun.org
 EMAIL_FROM=noreply@yourdomain.com
 
+# Aegis Frontend (required for email verification links)
+AEGIS_FRONTEND_URL=https://aegis.yourdomain.com
+
 # Optional (have defaults)
 FLASK_ENV=production
 FLASK_DEBUG=False
@@ -422,7 +437,7 @@ docker-compose logs --tail=100 app
 ## Related Projects
 
 - **byteforge-aegis-client-js** - JavaScript/TypeScript API client
-- **byteforge-aegis-frontend** - Next.js frontend application (coming soon)
+- **byteforge-aegis-frontend** - Next.js frontend application with centralized email verification
 
 ## Development Status
 
