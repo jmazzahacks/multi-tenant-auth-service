@@ -5,6 +5,7 @@ from database import db_manager
 from models.user import User
 from models.user_role import UserRole
 from models.auth_token import AuthToken
+from models.verification_result import VerificationResult
 from services.password_service import password_service
 from services.token_service import token_service
 from services.email_service import email_service
@@ -69,7 +70,6 @@ class AuthService:
                     to_email=user.email,
                     token=verification_token.token,
                     site_name=site.name,
-                    frontend_url=site.frontend_url,
                     from_email=site.email_from,
                     from_name=site.email_from_name
                 )
@@ -123,7 +123,7 @@ class AuthService:
         """
         return token_service.invalidate_auth_token(token)
 
-    def verify_email(self, token: str) -> User:
+    def verify_email(self, token: str) -> VerificationResult:
         """
         Verify a user's email address using a verification token.
 
@@ -131,7 +131,7 @@ class AuthService:
             token: The email verification token
 
         Returns:
-            User: The updated user with is_verified=True
+            VerificationResult: Contains the updated user and redirect URL
 
         Raises:
             ValueError: If token is invalid or expired
@@ -145,10 +145,20 @@ class AuthService:
         if not user:
             raise ValueError("User not found")
 
+        # Get site info for redirect URL
+        site = db_manager.find_site_by_id(user.site_id)
+        if not site:
+            raise ValueError("Site not found")
+
         user.is_verified = True
         user.updated_at = int(time.time())
 
-        return db_manager.update_user(user)
+        updated_user = db_manager.update_user(user)
+
+        return VerificationResult(
+            user=updated_user,
+            redirect_url=site.get_verification_redirect_url()
+        )
 
     def change_password(self, user_id: int, old_password: str, new_password: str) -> User:
         """

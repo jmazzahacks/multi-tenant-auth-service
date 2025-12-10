@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS sites (
     name VARCHAR(255) NOT NULL,
     domain VARCHAR(255) UNIQUE NOT NULL,
     frontend_url VARCHAR(255) NOT NULL,
+    verification_redirect_url VARCHAR(255),
     email_from VARCHAR(255) NOT NULL,
     email_from_name VARCHAR(255) NOT NULL,
     created_at BIGINT NOT NULL,

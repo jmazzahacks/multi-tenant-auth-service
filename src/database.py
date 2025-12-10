@@ -92,7 +92,7 @@ class DatabaseManager:
         Create a new site in the database.
 
         Args:
-            site: Site model with name, domain, frontend_url, email_from, email_from_name, created_at, updated_at
+            site: Site model with name, domain, frontend_url, verification_redirect_url, email_from, email_from_name, created_at, updated_at
 
         Returns:
             Site: The created site with auto-generated id
@@ -100,11 +100,11 @@ class DatabaseManager:
         with self.get_cursor(commit=True) as cursor:
             cursor.execute(
                 """
-                INSERT INTO sites (name, domain, frontend_url, email_from, email_from_name, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO sites (name, domain, frontend_url, verification_redirect_url, email_from, email_from_name, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
-                (site.name, site.domain, site.frontend_url, site.email_from, site.email_from_name, site.created_at, site.updated_at)
+                (site.name, site.domain, site.frontend_url, site.verification_redirect_url, site.email_from, site.email_from_name, site.created_at, site.updated_at)
             )
             site.id = cursor.fetchone()['id']
         return site
@@ -163,10 +163,10 @@ class DatabaseManager:
             cursor.execute(
                 """
                 UPDATE sites
-                SET name = %s, domain = %s, frontend_url = %s, email_from = %s, email_from_name = %s, updated_at = %s
+                SET name = %s, domain = %s, frontend_url = %s, verification_redirect_url = %s, email_from = %s, email_from_name = %s, updated_at = %s
                 WHERE id = %s
                 """,
-                (site.name, site.domain, site.frontend_url, site.email_from, site.email_from_name, site.updated_at, site.id)
+                (site.name, site.domain, site.frontend_url, site.verification_redirect_url, site.email_from, site.email_from_name, site.updated_at, site.id)
             )
         return site
 

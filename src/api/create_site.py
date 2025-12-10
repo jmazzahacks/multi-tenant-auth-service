@@ -40,7 +40,8 @@ def create_site(validated_data):
         email_from=validated_data['email_from'],
         email_from_name=validated_data['email_from_name'],
         created_at=current_time,
-        updated_at=current_time
+        updated_at=current_time,
+        verification_redirect_url=validated_data.get('verification_redirect_url')
     )
 
     try:

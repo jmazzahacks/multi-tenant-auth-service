@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_input(prompt: str, default: str = None) -> str:
+def get_input(prompt: str, default: str = None, required: bool = True) -> str:
     """Get user input with optional default value"""
     if default:
         user_input = input(f"{prompt} [{default}]: ").strip()
@@ -21,6 +21,8 @@ def get_input(prompt: str, default: str = None) -> str:
             user_input = input(f"{prompt}: ").strip()
             if user_input:
                 return user_input
+            if not required:
+                return ""
             print("This field is required. Please try again.")
 
 
@@ -49,6 +51,17 @@ def main():
         'email_from': get_input("Email from address (e.g., 'noreply@example.com')"),
         'email_from_name': get_input("Email from name (e.g., 'My Website')")
     }
+
+    # Optional: verification redirect URL
+    print()
+    print("After email verification, users will be redirected to a URL.")
+    print("Leave blank to use the frontend URL, or specify a welcome/thank-you page.")
+    verification_redirect = get_input(
+        "Verification redirect URL (e.g., 'https://example.com/welcome')",
+        required=False
+    )
+    if verification_redirect:
+        site_data['verification_redirect_url'] = verification_redirect
 
     print()
     print("-" * 60)
@@ -84,6 +97,8 @@ def main():
             print(f"Name: {site['name']}")
             print(f"Domain: {site['domain']}")
             print(f"Frontend URL: {site['frontend_url']}")
+            if site.get('verification_redirect_url'):
+                print(f"Verification Redirect: {site['verification_redirect_url']}")
             print(f"Email From: {site['email_from_name']} <{site['email_from']}>")
             print(f"Created: {site['created_at']}")
             print("=" * 60)

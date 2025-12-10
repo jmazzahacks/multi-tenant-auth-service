@@ -35,6 +35,9 @@ class Config:
     APP_HOST: str = os.getenv('APP_HOST', '0.0.0.0')
     APP_PORT: int = int(os.getenv('APP_PORT', 5678))
 
+    # Aegis Frontend URL (for centralized email verification links)
+    AEGIS_FRONTEND_URL: str = os.getenv('AEGIS_FRONTEND_URL', 'http://localhost:3000')
+
 
 class DevelopmentConfig(Config):
     """Development configuration"""

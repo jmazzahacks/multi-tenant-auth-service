@@ -9,6 +9,7 @@ class CreateSiteRequestSchema(Schema):
     name = fields.String(required=True, validate=validate.Length(min=1, max=255))
     domain = fields.String(required=True, validate=validate.Length(min=1, max=255))
     frontend_url = fields.Url(required=True)
+    verification_redirect_url = fields.Url(required=False, allow_none=True)
     email_from = fields.Email(required=True)
     email_from_name = fields.String(required=True, validate=validate.Length(min=1, max=255))
 
@@ -18,6 +19,7 @@ class UpdateSiteRequestSchema(Schema):
     name = fields.String(required=False, validate=validate.Length(min=1, max=255))
     domain = fields.String(required=False, validate=validate.Length(min=1, max=255))
     frontend_url = fields.Url(required=False)
+    verification_redirect_url = fields.Url(required=False, allow_none=True)
     email_from = fields.Email(required=False)
     email_from_name = fields.String(required=False, validate=validate.Length(min=1, max=255))
 
@@ -28,6 +30,7 @@ class SiteResponseSchema(Schema):
     name = fields.String()
     domain = fields.String()
     frontend_url = fields.Url()
+    verification_redirect_url = fields.Url(allow_none=True)
     email_from = fields.Email()
     email_from_name = fields.String()
     created_at = fields.Integer()

@@ -42,7 +42,6 @@ def main():
         to_email=test_email,
         token="test-token-12345",
         site_name=site['name'],
-        frontend_url=site['frontend_url'],
         from_email=site['email_from'],
         from_name=site['email_from_name']
     )

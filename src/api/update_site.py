@@ -52,6 +52,8 @@ def update_site(validated_data, site_id):
         site.domain = validated_data['domain']
     if 'frontend_url' in validated_data:
         site.frontend_url = validated_data['frontend_url']
+    if 'verification_redirect_url' in validated_data:
+        site.verification_redirect_url = validated_data['verification_redirect_url']
     if 'email_from' in validated_data:
         site.email_from = validated_data['email_from']
     if 'email_from_name' in validated_data:

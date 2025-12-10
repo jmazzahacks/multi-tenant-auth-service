@@ -18,6 +18,7 @@ class EmailService:
         self.api_key = config.MAILGUN_API_KEY
         self.domain = config.MAILGUN_DOMAIN
         self.api_url = f"https://api.mailgun.net/v3/{self.domain}/messages"
+        self.aegis_frontend_url = config.AEGIS_FRONTEND_URL.rstrip('/')
 
     def send_email(
         self,
@@ -100,7 +101,6 @@ class EmailService:
         to_email: str,
         token: str,
         site_name: str,
-        frontend_url: str,
         from_email: str,
         from_name: str
     ) -> bool:
@@ -111,16 +111,14 @@ class EmailService:
             to_email: User's email address
             token: Verification token
             site_name: Name of the site
-            frontend_url: Frontend URL for this site
             from_email: Sender email address (site-specific)
             from_name: Sender display name (site-specific)
 
         Returns:
             bool: True if sent successfully
         """
-        # Strip trailing slash from frontend_url to avoid double slashes
-        base_url = frontend_url.rstrip('/')
-        verification_url = f"{base_url}/verify-email?token={token}"
+        # Use centralized Aegis frontend URL for verification
+        verification_url = f"{self.aegis_frontend_url}/verify-email?token={token}"
 
         subject = f"Verify your email for {site_name}"
 
