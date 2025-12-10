@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Interactive script to create a new user (regular or admin) for a site.
 """

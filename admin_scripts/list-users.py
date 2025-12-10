@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Script to list all users for a site in the auth service.
 Requires either --site-id or --domain parameter.
