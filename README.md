@@ -88,7 +88,10 @@ Site management endpoints require the master API key (`X-API-Key` header).
 Create a new tenant site. Use the included interactive script for convenience.
 
 ```bash
-# Using the interactive script
+# Using the interactive script (Docker)
+docker exec -it aegis python admin_scripts/create-site.py
+
+# Using the interactive script (local development)
 source bin/activate && python admin_scripts/create-site.py
 
 # Or using curl directly
@@ -134,7 +137,10 @@ curl "http://localhost:5678/api/sites/by-domain?domain=example.com"
 All fields are optional. Only provided fields will be updated.
 
 ```bash
-# Using the interactive script
+# Using the interactive script (Docker)
+docker exec -it aegis python admin_scripts/update-site.py
+
+# Using the interactive script (local development)
 source bin/activate && python admin_scripts/update-site.py
 
 # Or using curl directly
@@ -166,8 +172,14 @@ Convenient interactive scripts for common administrative tasks:
 - **list-users.py** - List users for a site (by site ID or domain)
 - **resend-verification.py** - Resend verification email for unverified users
 
-All scripts use the master API key for authentication. Run from the repository root:
+All scripts use the master API key for authentication.
 
+**Docker (production):**
+```bash
+docker exec -it aegis python admin_scripts/<script-name>.py
+```
+
+**Local development:**
 ```bash
 source bin/activate && python admin_scripts/<script-name>.py
 ```
