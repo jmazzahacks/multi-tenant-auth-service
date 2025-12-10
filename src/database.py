@@ -123,7 +123,7 @@ class DatabaseManager:
 
         with self.get_cursor() as cursor:
             cursor.execute(
-                "SELECT id, name, domain, frontend_url, email_from, email_from_name, created_at, updated_at FROM sites WHERE id = %s",
+                "SELECT id, name, domain, frontend_url, verification_redirect_url, email_from, email_from_name, created_at, updated_at FROM sites WHERE id = %s",
                 (site_id,)
             )
             row = cursor.fetchone()
@@ -143,7 +143,7 @@ class DatabaseManager:
 
         with self.get_cursor() as cursor:
             cursor.execute(
-                "SELECT id, name, domain, frontend_url, email_from, email_from_name, created_at, updated_at FROM sites WHERE domain = %s",
+                "SELECT id, name, domain, frontend_url, verification_redirect_url, email_from, email_from_name, created_at, updated_at FROM sites WHERE domain = %s",
                 (domain,)
             )
             row = cursor.fetchone()
