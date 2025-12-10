@@ -63,6 +63,8 @@ def main():
                 print(f"  Name:         {site['name']}")
                 print(f"  Domain:       {site['domain']}")
                 print(f"  Frontend URL: {site['frontend_url']}")
+                redirect_url = site.get('verification_redirect_url') or '(not set)'
+                print(f"  Verify Redirect: {redirect_url}")
                 print(f"  Email From:   {site['email_from_name']} <{site['email_from']}>")
                 print(f"  Created:      {site['created_at']}")
 
