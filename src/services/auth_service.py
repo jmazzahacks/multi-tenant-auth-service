@@ -160,6 +160,42 @@ class AuthService:
             redirect_url=site.get_verification_redirect_url()
         )
 
+    def resend_verification_email(self, user_id: int) -> bool:
+        """
+        Resend verification email with a new token.
+
+        Args:
+            user_id: The user's ID
+
+        Returns:
+            bool: True if email was sent successfully
+
+        Raises:
+            ValueError: If user not found, already verified, or site not found
+        """
+        user = db_manager.find_user_by_id(user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        if user.is_verified:
+            raise ValueError("User is already verified")
+
+        site = db_manager.find_site_by_id(user.site_id)
+        if not site:
+            raise ValueError("Site not found")
+
+        # Create new verification token
+        verification_token = token_service.create_email_verification_token(user.site_id, user.id)
+
+        # Send verification email
+        return email_service.send_verification_email(
+            to_email=user.email,
+            token=verification_token.token,
+            site_name=site.name,
+            from_email=site.email_from,
+            from_name=site.email_from_name
+        )
+
     def change_password(self, user_id: int, old_password: str, new_password: str) -> User:
         """
         Change a user's password after verifying the old password.
