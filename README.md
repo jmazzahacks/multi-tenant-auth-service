@@ -159,7 +159,61 @@ curl -X PUT http://localhost:5678/api/sites/{site_id} \
 
 User management endpoints are scoped to sites and use bearer token authentication.
 
-Documentation coming soon.
+#### Admin User Registration
+
+Create users via admin API. Users will set their own password during email verification (more secure than admin-set passwords).
+
+```bash
+curl -X POST http://localhost:5678/api/admin/register \
+  -H "X-API-Key: your-master-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "site_id": 1,
+    "email": "newuser@example.com",
+    "role": "user"
+  }'
+```
+
+The user will receive a verification email. When they click the link, they'll be prompted to set their password and complete account setup in one step.
+
+**Note:** The `role` field is optional and defaults to `"user"`. Set to `"admin"` for admin users.
+
+#### Check Verification Token
+
+Check if a verification token is valid and whether password setup is required (used by frontend).
+
+```bash
+curl -X POST http://localhost:5678/api/auth/check-verification-token \
+  -H "Content-Type: application/json" \
+  -d '{"token": "verification-token-here"}'
+```
+
+Response:
+```json
+{
+  "password_required": true,
+  "email": "user@example.com"
+}
+```
+
+#### Verify Email (with optional password)
+
+Verify email and optionally set password for admin-created users.
+
+```bash
+# For admin-created users (password required)
+curl -X POST http://localhost:5678/api/auth/verify-email \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "verification-token-here",
+    "password": "user-chosen-password"
+  }'
+
+# For self-registered users (password optional, already set)
+curl -X POST http://localhost:5678/api/auth/verify-email \
+  -H "Content-Type: application/json" \
+  -d '{"token": "verification-token-here"}'
+```
 
 ## Admin Scripts
 
