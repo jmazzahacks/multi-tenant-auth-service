@@ -6,6 +6,7 @@ from models.user import User
 from models.user_role import UserRole
 from models.auth_token import AuthToken
 from models.verification_result import VerificationResult
+from models.verification_token_status import VerificationTokenStatus
 from services.password_service import password_service
 from services.token_service import token_service
 from services.email_service import email_service
@@ -16,17 +17,17 @@ logger = logging.getLogger(__name__)
 class AuthService:
     """Service for user authentication and account management"""
 
-    def register_user(self, site_id: int, email: str, password: str, role: UserRole = UserRole.USER) -> User:
+    def register_user(self, site_id: int, email: str, password: Optional[str], role: UserRole = UserRole.USER) -> User:
         """
         Register a new user account for a specific site.
 
-        Creates a new user with hashed password and generates an email
-        verification token. The user is not verified by default.
+        Creates a new user and generates an email verification token.
+        The user is not verified by default.
 
         Args:
             site_id: The ID of the site to register the user for
             email: The user's email address
-            password: The user's plain text password
+            password: The user's plain text password (None for admin-created users who will set password via email)
             role: The user's role (defaults to USER)
 
         Returns:
@@ -40,8 +41,8 @@ class AuthService:
         if existing_user:
             raise ValueError("Email already registered for this site")
 
-        # Hash password
-        password_hash = password_service.hash_password(password)
+        # Hash password if provided
+        password_hash = password_service.hash_password(password) if password else None
 
         # Create user
         current_time = int(time.time())
@@ -98,6 +99,10 @@ class AuthService:
         if not user:
             raise ValueError("Invalid credentials")
 
+        # Check if user has a password set (admin-created users may not have one yet)
+        if user.password_hash is None:
+            raise ValueError("Account setup incomplete. Please check your email to set your password.")
+
         # Verify password
         if not password_service.verify_password(password, user.password_hash):
             raise ValueError("Invalid credentials")
@@ -123,18 +128,50 @@ class AuthService:
         """
         return token_service.invalidate_auth_token(token)
 
-    def verify_email(self, token: str) -> VerificationResult:
+    def check_verification_token(self, token: str) -> VerificationTokenStatus:
         """
-        Verify a user's email address using a verification token.
+        Check verification token status without consuming it.
+
+        Used by frontend to determine if password form should be shown.
 
         Args:
             token: The email verification token
 
         Returns:
-            VerificationResult: Contains the updated user and redirect URL
+            VerificationTokenStatus: Contains password_required and email
 
         Raises:
             ValueError: If token is invalid or expired
+        """
+        user_id = token_service.check_email_verification_token(token)
+        if not user_id:
+            raise ValueError("Invalid or expired verification token")
+
+        user = db_manager.find_user_by_id(user_id)
+        if not user:
+            raise ValueError("User not found")
+
+        return VerificationTokenStatus(
+            password_required=user.password_hash is None,
+            email=user.email
+        )
+
+    def verify_email(self, token: str, password: Optional[str] = None) -> VerificationResult:
+        """
+        Verify a user's email address using a verification token.
+
+        For admin-created users (no password), a password must be provided.
+        For self-registered users (have password), password is optional/ignored.
+
+        Args:
+            token: The email verification token
+            password: Optional password to set (required for admin-created users)
+
+        Returns:
+            VerificationResult: Contains the updated user and redirect URL
+
+        Raises:
+            ValueError: If token is invalid/expired, or password required but not provided
         """
         user_id = token_service.validate_email_verification_token(token)
         if not user_id:
@@ -144,6 +181,12 @@ class AuthService:
         user = db_manager.find_user_by_id(user_id)
         if not user:
             raise ValueError("User not found")
+
+        # Check if password is required (admin-created users without password)
+        if user.password_hash is None:
+            if not password:
+                raise ValueError("Password is required to complete account setup")
+            user.password_hash = password_service.hash_password(password)
 
         # Get site info for redirect URL
         site = db_manager.find_site_by_id(user.site_id)

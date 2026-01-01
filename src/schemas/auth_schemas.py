@@ -5,10 +5,17 @@ from marshmallow import Schema, fields, validate
 
 
 class RegisterRequestSchema(Schema):
-    """Schema for user registration request"""
+    """Schema for user registration request (self-registration with password)"""
     site_id = fields.Integer(required=True)
     email = fields.Email(required=True)
     password = fields.String(required=True, validate=validate.Length(min=8))
+
+
+class AdminRegisterRequestSchema(Schema):
+    """Schema for admin user registration request (no password - user sets via email)"""
+    site_id = fields.Integer(required=True)
+    email = fields.Email(required=True)
+    role = fields.String(validate=validate.OneOf(['user', 'admin']))
 
 
 class LoginRequestSchema(Schema):
@@ -19,7 +26,13 @@ class LoginRequestSchema(Schema):
 
 
 class VerifyEmailRequestSchema(Schema):
-    """Schema for email verification request"""
+    """Schema for email verification request (with optional password for admin-created users)"""
+    token = fields.String(required=True)
+    password = fields.String(validate=validate.Length(min=8))  # Optional - required only for users without password
+
+
+class CheckVerificationTokenSchema(Schema):
+    """Schema for checking verification token status"""
     token = fields.String(required=True)
 
 

@@ -116,6 +116,30 @@ class TokenService:
 
         return db_manager.create_email_verification_token(email_token)
 
+    def check_email_verification_token(self, token: str) -> Optional[int]:
+        """
+        Check an email verification token without consuming it.
+
+        Non-destructive check - the token remains valid for later use.
+        Use this to check if a password is required before verification.
+
+        Args:
+            token: The email verification token string to check
+
+        Returns:
+            Optional[int]: The user_id if token is valid, None if invalid or expired
+        """
+        email_token = db_manager.find_email_verification_token(token)
+
+        if not email_token:
+            return None
+
+        current_time = int(time.time())
+        if email_token.expires_at < current_time:
+            return None
+
+        return email_token.user_id
+
     def validate_email_verification_token(self, token: str) -> Optional[int]:
         """
         Validate an email verification token and mark it as used by deleting it.

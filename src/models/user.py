@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from models.user_role import UserRole
 
 
@@ -15,7 +15,7 @@ class User:
         id: Unique user identifier
         site_id: The site/tenant this user belongs to
         email: User's email address (unique per site)
-        password_hash: Bcrypt hashed password
+        password_hash: Bcrypt hashed password (None for admin-created users who haven't set password yet)
         is_verified: Whether the user's email has been verified
         role: User role (USER or ADMIN)
         created_at: Unix timestamp when the user was created
@@ -24,7 +24,7 @@ class User:
     id: int
     site_id: int
     email: str
-    password_hash: str
+    password_hash: Optional[str]
     is_verified: bool
     role: UserRole
     created_at: int
